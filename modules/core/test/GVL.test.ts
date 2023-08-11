@@ -6,31 +6,34 @@ import {IntMap} from '../src/model/IntMap';
 import {XMLHttpTestTools} from '@iabtechlabtcf/testing';
 import {Json} from '../src/Json';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const vendorlistJson = require('@iabtechlabtcf/testing/lib/vendorlist/vendor-list-v24.json');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const translationJson = require('@iabtechlabtcf/testing/lib/vendorlist/purposes-fr.json');
+import vendorListJson from '../../testing/lib/mjs/vendorlist/v2/vendor-list-v24.json' assert { type: 'json' };
+import translationJson from '../../testing/lib/mjs/vendorlist/v2/purposes-fr.json' assert { type: 'json' };
+import vendorListJson22 from '../../testing/lib/mjs/vendorlist/v2.2/vendor-list.json' assert { type: 'json' };
+import {VersionOrVendorList} from '../lib/mjs';
+
+const vendorlistJson: any = vendorListJson as unknown as VersionOrVendorList;
+const vendorlistJson22: any = vendorListJson22 as unknown as VersionOrVendorList;
 
 describe('GVL', (): void => {
 
-  const assertPopulated = (gvl: GVL): void => {
+  const assertPopulated = (gvl: GVL, json = vendorlistJson): void => {
 
-    Object.keys(vendorlistJson).forEach((key: string): void => {
+    Object.keys(json).forEach((key: string): void => {
 
       const msg = `assertPopulated(): gvl.${key}]`;
 
       if (key === 'lastUpdated') {
 
         expect((gvl[key] as Date).getTime(), msg)
-          .to.equal((new Date(vendorlistJson.lastUpdated).getTime()));
+          .to.equal((new Date(json.lastUpdated).getTime()));
 
-      } else if (typeof vendorlistJson[key] === 'object') {
+      } else if (typeof json[key] === 'object') {
 
-        expect(gvl[key], msg).to.deep.equal(vendorlistJson[key]);
+        expect(gvl[key], msg).to.deep.equal(json[key]);
 
       } else {
 
-        expect(gvl[key], msg).to.equal(vendorlistJson[key]);
+        expect(gvl[key], msg).to.equal(json[key]);
 
       }
 
@@ -117,13 +120,31 @@ describe('GVL', (): void => {
 
   });
 
+  it('should propogate all values with passed in json for version 2.2', (): void => {
+
+    const gvl: GVL = new GVL(vendorlistJson22);
+
+    assertPopulated(gvl, vendorlistJson22);
+
+  });
+
   it('should clone all values', (): void => {
 
-    const gvl: GVL = new GVL(vendorlistJson);
+    const gvl: GVL = new GVL(vendorlistJson as unknown as VersionOrVendorList);
     const clone: GVL = gvl.clone();
 
     assertPopulated(gvl);
     assertPopulated(clone);
+
+  });
+
+  it('should clone all values for version 2.2', (): void => {
+
+    const gvl: GVL = new GVL(vendorlistJson22);
+    const clone: GVL = gvl.clone();
+
+    assertPopulated(gvl, vendorlistJson22);
+    assertPopulated(clone, vendorlistJson22);
 
   });
 
